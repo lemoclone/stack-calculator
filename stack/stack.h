@@ -26,4 +26,8 @@ int stack_isempty();
 int stack_isfull();
 int stack_clear();
 int stack_init();
+int stack_calculate(Stack *stack);
+int stack_calculate_parenthesis(Stack *stack);
+int stack_destroy(Stack *stack);
+int stack_display(Stack *stack);
 #endif

@@ -1,3 +1,3 @@
 #!/bin/bash
-gcc main.c stack.c -o test
+gcc main.c calc.c stack.c mathlib.c -o test
 ./t*

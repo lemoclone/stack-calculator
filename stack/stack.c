@@ -1,6 +1,7 @@
 #include <stdlib.h>
 
 #include "stack.h"
+#include "mathlib.h"
 
 StackElmt* newElmt(int pid, char *name, int prty, StackElmt *next){
 	StackElmt *new_element;
@@ -39,12 +40,15 @@ int stack_push(Stack *stack,StackElmt *stackElmt){
 }
 
 int stack_pop(Stack *stack){
+	int tmp;
 	if((*stack).size == 0)
 		return -1;
+	StackElmt *pop_element = (*stack).top;
 	(*stack).top = ((*stack).top)->next;
-	
 	(*stack).size--;
-	return 0;
+	tmp = (*pop_element).pid; 
+	free(pop_element);
+	return tmp;
 }
 
 int stack_isempty(Stack *stack){
@@ -52,4 +56,64 @@ int stack_isempty(Stack *stack){
 }
 int stack_isfull(Stack *stack){
 	return (*stack).size == MAXSIZE ? 1:-1;
+}
+
+int stack_clear(Stack *stack){
+	while((*stack).size > 0)
+		stack_pop(stack);
+	return (*stack).size;
+}
+
+int stack_calculate(Stack *stack){
+	StackElmt *non;
+	int num_2,num_1,number;
+	char oper;
+	while((*stack).size >1){
+		num_2 = stack_pop(stack);
+		oper = stack_pop(stack);
+		num_1 = stack_pop(stack);
+		number = calculate(oper,num_1,num_2);
+		//printf("in (prcd[1]<=prcd[0]): %c %d %d %d\n",oper,num_1,num_2,number);
+		stack_push(stack,newElmt(number,"opd",1,non));
+	}
+	return ((*stack).top)->pid;
+}
+
+int stack_calculate_parenthesis(Stack *stack){
+	StackElmt *non;
+	int num_2,num_1,number;
+	char oper;
+	while((*stack).size >1){
+		num_2 = stack_pop(stack);
+		oper = stack_pop(stack);
+		num_1 = stack_pop(stack);
+		stack_pop(stack);
+		number = calculate(oper,num_1,num_2);
+		//printf("in (prcd[1]<=prcd[0]): %c %d %d %d\n",oper,num_1,num_2,number);
+		stack_push(stack,newElmt(number,"opd",1,non));
+	}
+	return ((*stack).top)->pid;
+}
+
+
+int stack_destroy(Stack *stack){
+	if((*stack).size == 0)
+		return -1;
+	stack_clear;
+	free(stack);
+	return 0;
+}
+
+int stack_display(Stack *stack){
+	StackElmt *p;
+	p = (*stack).top;
+	while(p != NULL){
+		if((*p).prty == 10)
+			printf("%d",(*p).pid);
+		else 
+			printf("%c",(*p).pid);
+		p = (*p).next;
+	}
+	printf("\n");
+	return 0;
 }
