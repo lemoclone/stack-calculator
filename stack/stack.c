@@ -1,9 +1,8 @@
 #include <stdlib.h>
 
 #include "stack.h"
-#include "mathlib.h"
 
-StackElmt* newElmt(int pid, char *name, int prty, StackElmt *next){
+StackElmt* elmt_new(int pid, char *name, int prty, StackElmt *next){
 	StackElmt *new_element;
 	if((new_element = (StackElmt *)malloc(sizeof(StackElmt))) == NULL)
 		return NULL;
@@ -14,7 +13,7 @@ StackElmt* newElmt(int pid, char *name, int prty, StackElmt *next){
 	return new_element;
 }
 
-Stack* newStack(int size, StackElmt *top, StackElmt *bottom, void *data){
+Stack* stack_new(int size, StackElmt *top, StackElmt *bottom, void *data){
 	Stack *new_stack;
 	if((new_stack = (Stack *)malloc(sizeof(Stack))) == NULL)
 		return NULL;
@@ -65,34 +64,39 @@ int stack_clear(Stack *stack){
 }
 
 int stack_calculate(Stack *stack){
-	StackElmt *non;
-	int num_2,num_1,number;
+	int num_2,num_1,result;
 	char oper;
-	while((*stack).size >1){
+	/*Consider three different cases of a+(b*c) and a+b*c and (a+b*c)*/
+	while((*stack).size > 1 && (*stack).top->next->prty != 3){
 		num_2 = stack_pop(stack);
 		oper = stack_pop(stack);
 		num_1 = stack_pop(stack);
-		number = calculate(oper,num_1,num_2);
-		//printf("in (prcd[1]<=prcd[0]): %c %d %d %d\n",oper,num_1,num_2,number);
-		stack_push(stack,newElmt(number,"opd",1,non));
+		result = calculate(oper,num_1,num_2);
+		if(DEBUGM)
+			printf("stack_calculate: %c %d %d %d\n",oper,num_1,num_2,result);
+		stack_push(stack,elmt_new(result,"opd",-1,NULL));
 	}
-	return ((*stack).top)->pid;
+	return result;
 }
 
 int stack_calculate_parenthesis(Stack *stack){
-	StackElmt *non;
-	int num_2,num_1,number;
+	int num_2,num_1,result;
 	char oper;
+	/*Consider three different cases of a+(b*c) and a+b*c and (a+b*c)*/
 	while((*stack).size >1){
 		num_2 = stack_pop(stack);
 		oper = stack_pop(stack);
-		num_1 = stack_pop(stack);
-		stack_pop(stack);
-		number = calculate(oper,num_1,num_2);
-		//printf("in (prcd[1]<=prcd[0]): %c %d %d %d\n",oper,num_1,num_2,number);
-		stack_push(stack,newElmt(number,"opd",1,non));
+		if(oper =='(')
+			return num_2;
+		else {
+			num_1 = stack_pop(stack);
+			result = calculate(oper,num_1,num_2);
+			stack_push(stack,elmt_new(result,"opd",-1,NULL));
+			if(DEBUGM)
+				printf("stack_calculate_parenthesis: %c %d %d %d\n",oper,num_1,num_2,result);	
+		}
 	}
-	return ((*stack).top)->pid;
+	return result;
 }
 
 
@@ -108,10 +112,24 @@ int stack_display(Stack *stack){
 	StackElmt *p;
 	p = (*stack).top;
 	while(p != NULL){
-		if((*p).prty == 10)
+		if((*p).prty == -1)
 			printf("%d",(*p).pid);
 		else 
 			printf("%c",(*p).pid);
+		p = (*p).next;
+	}
+	printf("\n");
+	return 0;
+}
+
+int stack_display_instack(Stack *stack){
+	StackElmt *p;
+	p = (*stack).top;
+	while(p != NULL){
+		if((*p).prty == -1)
+			printf("%d %s %d\n",(*p).pid,(*p).name,(*p).prty);
+		else 
+			printf("%c %s %d\n",(*p).pid,(*p).name,(*p).prty);
 		p = (*p).next;
 	}
 	printf("\n");
